@@ -4,6 +4,7 @@ import (
 	"github.com/mxmrykov/asterix-auth/internal/cache"
 	"github.com/mxmrykov/asterix-auth/internal/config"
 	"github.com/mxmrykov/asterix-auth/internal/grpc"
+	"github.com/mxmrykov/asterix-auth/internal/http/external_server"
 	"github.com/mxmrykov/asterix-auth/pkg/clients/vault"
 	"github.com/rs/zerolog"
 )
@@ -18,6 +19,9 @@ type Service struct {
 	Cfg     *config.Auth
 
 	Cache cache.ICache
+
+	Server external_server.IServer
+
 	Vault vault.IVault
 
 	GrpcAst   grpc.IAst
@@ -43,19 +47,22 @@ func NewService(cfg *config.Auth, logger *zerolog.Logger) (IService, error) {
 		logger.Fatal().Err(err).Msg("error initializing OAuth GRPC client")
 	}
 
+	c := cache.NewCache()
+
 	return &Service{
 		Zerolog:   logger,
 		Cfg:       cfg,
-		Cache:     cache.NewCache(),
+		Cache:     c,
 		Vault:     v,
+		Server:    external_server.NewServer(&cfg.ExternalServer, logger, c),
 		GrpcAst:   grpcAst,
 		GrpcOAuth: grpcOAuth,
 	}, nil
 }
 
 func (s *Service) Start() error {
-	return nil
+	return s.Server.Start()
 }
 func (s *Service) Stop() error {
-	return nil
+	return s.Server.Stop()
 }

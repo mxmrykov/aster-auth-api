@@ -1,11 +1,13 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"os"
+
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/mxmrykov/asterix-auth/pkg/logger"
 	"github.com/rs/zerolog"
-	"os"
 )
 
 type (
@@ -50,6 +52,11 @@ type (
 
 func InitConfig() (*Auth, *zerolog.Logger, error) {
 	cfg := *new(Auth)
+
+	if os.Getenv("BUILD_ENV") == "" {
+		return nil, nil, errors.New("build environment is not assigned")
+	}
+
 	path := fmt.Sprintf("./deploy/%s.yaml", os.Getenv("BUILD_ENV"))
 
 	if err := cleanenv.ReadConfig(path, &cfg); err != nil {

@@ -18,19 +18,21 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to initialize config")
 	}
 
+	log.Info().Timestamp().Msg("initializing service...")
+
 	s, err := service.NewService(cfg, logger)
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize service")
 	}
 
-	log.Info().Timestamp().Msg("initializing service...")
-
-	if err = s.Start(); err != nil {
-		log.Fatal().Err(err).Msg("failed to start service")
-	}
-
 	log.Info().Timestamp().Msg("starting service...")
+
+	go func() {
+		if err = s.Start(); err != nil {
+			log.Fatal().Err(err).Msg("failed to start service")
+		}
+	}()
 
 	<-utils.GracefulShutDown()
 
