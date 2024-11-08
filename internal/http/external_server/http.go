@@ -38,7 +38,7 @@ func NewServer(cfg *config.ExternalServer, logger *zerolog.Logger, cache cache.I
 		router: router,
 		cache:  cache,
 		http: http.Server{
-			Addr:    fmt.Sprintf(":%s", cfg.Port),
+			Addr:    fmt.Sprintf(":1000"),
 			Handler: router,
 		},
 	}
@@ -49,12 +49,14 @@ func NewServer(cfg *config.ExternalServer, logger *zerolog.Logger, cache cache.I
 }
 
 func (s *Server) configureRouter() {
+	s.router.Use(s.footPrintAuth)
+
 	internalAuthGroup := s.router.Group("/auth/api/v1/internal")
 	internalAuthGroup.Use(s.internalAuthMiddleWare)
 	internalAuthGroup.POST("/new/oauth")
 
 	externalAuthGroup := s.router.Group("/auth/api/v1/external")
-	externalAuthGroup.POST("/new/sid")
+	externalAuthGroup.POST("/new/sid", s.authorizeExternal)
 }
 
 func recoveryFunc(logger *zerolog.Logger) gin.RecoveryFunc {
