@@ -36,28 +36,48 @@ func (s *Server) footPrintAuth(ctx *gin.Context) {
 			s.setFootprintCookie(ctx)
 			ctx.Next()
 		case fpClient == nil:
+			s.dropFootprintCookie(ctx)
+
 			utils.Responize(ctx, nil, http.StatusUnauthorized, "Footprint: invalid signature", true)
 			ctx.Abort()
 			return
-		case fpClient.RateLimitRemain <= 0:
-			if !time.Now().After(fpClient.LastReq.Add(5 * time.Second)) {
+		case fpClient.RateLimitRemain <= 1:
+			if !time.Now().After(fpClient.LastReq.Add(s.config.RateLimiterTimeframe)) {
+				fpClient.LastReq = time.Now()
+				fpClient.LastUpdated = time.Now()
+				s.cache.SetClient(c.Value, fpClient)
+
 				utils.Responize(ctx, nil, http.StatusTooManyRequests, "Footprint: rate limited", true)
 				ctx.Abort()
 				return
 			}
 
-			fpClient.RateLimitRemain = 5
+			fpClient.RateLimitRemain = s.config.RateLimiterCap
 		default:
 			fpClient.RateLimitRemain -= 1
 		}
 
-		fpClient.LastUpdated = time.Now()
 		fpClient.LastReq = time.Now()
+		fpClient.LastUpdated = time.Now()
 
 		s.cache.SetClient(c.Value, fpClient)
 	}
 
 	ctx.Next()
+}
+
+func (s *Server) dropFootprintCookie(ctx *gin.Context) {
+	cookie := http.Cookie{
+		Name:     "X-Client-Footprint",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	http.SetCookie(ctx.Writer, &cookie)
 }
 
 func (s *Server) setFootprintCookie(ctx *gin.Context) {

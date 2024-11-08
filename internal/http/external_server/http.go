@@ -34,6 +34,7 @@ func NewServer(cfg *config.ExternalServer, logger *zerolog.Logger, cache cache.I
 	)
 
 	s := &Server{
+		config: cfg,
 		logger: logger,
 		router: router,
 		cache:  cache,

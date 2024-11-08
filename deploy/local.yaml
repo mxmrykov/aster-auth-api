@@ -1,15 +1,17 @@
-app:
-  useStackTrace: true
-  externalServer:
-    port: 1000
-  grpcAST:
-    host: "localhost"
-    port: 4000
-  grpcOAuth:
-    host: "localhost"
-    port: 4004
-  vault:
-    tokenRepo:
-      appJwtSecretName: "appJwtSecret"
-      astJwtSecretName: "astJwtSecret"
-      oAuthJwtSecretName: "oAuthJwtSecret"
+useStackTrace: true
+externalServer:
+  port: 1000
+  rateLimiterTimeframe: "5s"
+  rateLimiterCap: 5
+  rateLimitCookieLifetime: 900
+grpcAST:
+  host: "localhost"
+  port: 4000
+grpcOAuth:
+  host: "localhost"
+  port: 4004
+vault:
+  tokenRepo:
+    appJwtSecretName: "appJwtSecret"
+    astJwtSecretName: "astJwtSecret"
+    oAuthJwtSecretName: "oAuthJwtSecret"

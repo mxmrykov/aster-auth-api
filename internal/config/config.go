@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/mxmrykov/asterix-auth/pkg/logger"
@@ -12,10 +13,7 @@ import (
 
 type (
 	Auth struct {
-		UseStackTrace  bool `yaml:"useStackTrace"`
-		AppJwtSecret   string
-		AstJwtSecret   string
-		OAuthJwtSecret string
+		UseStackTrace bool `yaml:"useStackTrace"`
 
 		ExternalServer ExternalServer `yaml:"externalServer"`
 		GrpcAST        GrpcAST        `yaml:"grpcAST"`
@@ -24,7 +22,9 @@ type (
 	}
 
 	ExternalServer struct {
-		Port string `yaml:"port"`
+		Port                 string        `yaml:"port"`
+		RateLimiterTimeframe time.Duration `yaml:"rateLimiterTimeframe"`
+		RateLimiterCap       uint8         `yaml:"rateLimiterCap"`
 	}
 
 	GrpcAST struct {
@@ -43,9 +43,9 @@ type (
 		TokenRepo struct {
 			Path string `yaml:"path"`
 
-			AppJwtSecretName   string
-			AstJwtSecretName   string
-			OAuthJwtSecretName string
+			AppJwtSecretName   string `yaml:"appJwtSecret"`
+			AstJwtSecretName   string `yaml:"astJwtSecret"`
+			OAuthJwtSecretName string `yaml:"oAuthJwtSecret"`
 		} `yaml:"tokenRepo"`
 	}
 )

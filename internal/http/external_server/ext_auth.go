@@ -9,7 +9,7 @@ import (
 func (s *Server) authorizeExternal(ctx *gin.Context) {
 	utils.Responize(
 		ctx,
-		s.cache.MapAllCl(),
+		s.config,
 		http.StatusOK,
 		"",
 		false,
