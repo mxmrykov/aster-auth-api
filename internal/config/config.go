@@ -22,19 +22,21 @@ type (
 	}
 
 	ExternalServer struct {
-		Port                 string        `yaml:"port"`
+		Port                 int           `yaml:"port"`
 		RateLimiterTimeframe time.Duration `yaml:"rateLimiterTimeframe"`
 		RateLimiterCap       uint8         `yaml:"rateLimiterCap"`
 	}
 
 	GrpcAST struct {
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
+		Host        string        `yaml:"host"`
+		Port        int           `yaml:"port"`
+		MaxPollTime time.Duration `yaml:"maxPollTime"`
 	}
 
 	GrpcOAuth struct {
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
+		Host        string        `yaml:"host"`
+		Port        int           `yaml:"port"`
+		MaxPollTime time.Duration `yaml:"maxPollTime"`
 	}
 
 	Vault struct {

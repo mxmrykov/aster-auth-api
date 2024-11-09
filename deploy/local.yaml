@@ -7,9 +7,11 @@ externalServer:
 grpcAST:
   host: "localhost"
   port: 4000
+  maxPollTime: "10s"
 grpcOAuth:
   host: "localhost"
   port: 4004
+  maxPollTime: "10s"
 vault:
   tokenRepo:
     appJwtSecretName: "appJwtSecret"

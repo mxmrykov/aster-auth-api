@@ -1,11 +1,12 @@
 package utils
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/mxmrykov/asterix-auth/internal/model"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func GracefulShutDown() chan os.Signal {
@@ -14,11 +15,15 @@ func GracefulShutDown() chan os.Signal {
 	return c
 }
 
-func Responize(ctx *gin.Context, data interface{}, code int, message string, error bool) {
-	ctx.JSON(code, model.Response{
-		Payload: data,
-		Status:  code,
-		Message: message,
-		Error:   error,
+func AssignSidToken(iaid, asid, signature string) (string, error) {
+	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, model.SidToken{
+		Iaid:          iaid,
+		Asid:          asid,
+		SignatureDate: time.Now().Format(time.RFC3339),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Minute * 3).Unix(),
+			Issuer:    "aster-auth",
+		},
 	})
+	return unsignedToken.SignedString(signature)
 }

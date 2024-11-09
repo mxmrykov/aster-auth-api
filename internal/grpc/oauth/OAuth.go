@@ -1,4 +1,4 @@
-package grpc
+package oauth
 
 import "github.com/mxmrykov/asterix-auth/internal/config"
 

@@ -4,28 +4,38 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/mxmrykov/asterix-auth/internal/cache"
+	"github.com/mxmrykov/asterix-auth/internal/config"
+	"github.com/mxmrykov/asterix-auth/internal/grpc/ast"
+	"github.com/mxmrykov/asterix-auth/internal/grpc/oauth"
+	"github.com/mxmrykov/asterix-auth/pkg/clients/vault"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mxmrykov/asterix-auth/internal/cache"
-	"github.com/mxmrykov/asterix-auth/internal/config"
 	"github.com/rs/zerolog"
 )
 
 type IServer interface {
 	Start() error
 	Stop() error
+
+	VaultGetter() vault.IVault
+
+	GrpcAstGetter() ast.IAst
+	GrpcOAuthGetter() oauth.IOAuth
+
+	CacheGetter() cache.ICache
+	CfgGetter() *config.Auth
 }
 
 type Server struct {
-	config *config.ExternalServer
-	logger *zerolog.Logger
-	cache  cache.ICache
+	svc    IServer
 	router *gin.Engine
 	http   http.Server
 }
 
-func NewServer(cfg *config.ExternalServer, logger *zerolog.Logger, cache cache.ICache) IServer {
+func NewServer(logger *zerolog.Logger, svc IServer) *Server {
 	router := gin.New()
 
 	router.Use(
@@ -34,12 +44,10 @@ func NewServer(cfg *config.ExternalServer, logger *zerolog.Logger, cache cache.I
 	)
 
 	s := &Server{
-		config: cfg,
-		logger: logger,
+		svc:    svc,
 		router: router,
-		cache:  cache,
 		http: http.Server{
-			Addr:    fmt.Sprintf(":1000"),
+			Addr:    fmt.Sprintf(":%d", svc.CfgGetter().ExternalServer.Port),
 			Handler: router,
 		},
 	}

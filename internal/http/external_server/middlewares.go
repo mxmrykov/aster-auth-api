@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/mxmrykov/asterix-auth/internal/cache"
-	"github.com/mxmrykov/asterix-auth/pkg/utils"
+	"github.com/mxmrykov/asterix-auth/pkg/responize"
 	"net/http"
 	"strings"
 	"time"
@@ -24,12 +24,12 @@ func (s *Server) footPrintAuth(ctx *gin.Context) {
 		case errors.Is(err, http.ErrNoCookie):
 			s.setFootprintCookie(ctx)
 		default:
-			utils.Responize(ctx, nil, http.StatusBadRequest, "Footprint: signature failed", true)
+			responize.R(ctx, nil, http.StatusBadRequest, "Footprint: signature failed", true)
 			ctx.Abort()
 			return
 		}
 	} else {
-		fpClient := s.cache.GetClient(c.Value)
+		fpClient := s.svc.CacheGetter().GetClient(c.Value)
 
 		switch {
 		case c.Value == "":
@@ -38,21 +38,21 @@ func (s *Server) footPrintAuth(ctx *gin.Context) {
 		case fpClient == nil:
 			s.dropFootprintCookie(ctx)
 
-			utils.Responize(ctx, nil, http.StatusUnauthorized, "Footprint: invalid signature", true)
+			responize.R(ctx, nil, http.StatusUnauthorized, "Footprint: invalid signature", true)
 			ctx.Abort()
 			return
 		case fpClient.RateLimitRemain <= 1:
-			if !time.Now().After(fpClient.LastReq.Add(s.config.RateLimiterTimeframe)) {
+			if !time.Now().After(fpClient.LastReq.Add(s.svc.CfgGetter().ExternalServer.RateLimiterTimeframe)) {
 				fpClient.LastReq = time.Now()
 				fpClient.LastUpdated = time.Now()
-				s.cache.SetClient(c.Value, fpClient)
+				s.svc.CacheGetter().SetClient(c.Value, fpClient)
 
-				utils.Responize(ctx, nil, http.StatusTooManyRequests, "Footprint: rate limited", true)
+				responize.R(ctx, nil, http.StatusTooManyRequests, "Footprint: rate limited", true)
 				ctx.Abort()
 				return
 			}
 
-			fpClient.RateLimitRemain = s.config.RateLimiterCap
+			fpClient.RateLimitRemain = s.svc.CfgGetter().ExternalServer.RateLimiterCap
 		default:
 			fpClient.RateLimitRemain -= 1
 		}
@@ -60,7 +60,7 @@ func (s *Server) footPrintAuth(ctx *gin.Context) {
 		fpClient.LastReq = time.Now()
 		fpClient.LastUpdated = time.Now()
 
-		s.cache.SetClient(c.Value, fpClient)
+		s.svc.CacheGetter().SetClient(c.Value, fpClient)
 	}
 
 	ctx.Next()
@@ -97,7 +97,7 @@ func (s *Server) setFootprintCookie(ctx *gin.Context) {
 		SameSite: http.SameSiteLaxMode,
 	}
 
-	s.cache.SetClient(strings.ToUpper(sign), &cache.Props{
+	s.svc.CacheGetter().SetClient(strings.ToUpper(sign), &cache.Props{
 		RateLimitRemain: 5,
 		LastReq:         time.Now(),
 		LastUpdated:     time.Now(),

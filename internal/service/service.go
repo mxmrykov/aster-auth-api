@@ -3,7 +3,8 @@ package service
 import (
 	"github.com/mxmrykov/asterix-auth/internal/cache"
 	"github.com/mxmrykov/asterix-auth/internal/config"
-	"github.com/mxmrykov/asterix-auth/internal/grpc"
+	"github.com/mxmrykov/asterix-auth/internal/grpc/ast"
+	"github.com/mxmrykov/asterix-auth/internal/grpc/oauth"
 	"github.com/mxmrykov/asterix-auth/internal/http/external_server"
 	"github.com/mxmrykov/asterix-auth/pkg/clients/vault"
 	"github.com/rs/zerolog"
@@ -20,12 +21,12 @@ type Service struct {
 
 	Cache cache.ICache
 
-	Server external_server.IServer
+	Server *external_server.Server
 
 	Vault vault.IVault
 
-	GrpcAst   grpc.IAst
-	GrpcOAuth grpc.IOAuth
+	GrpcAst   ast.IAst
+	GrpcOAuth oauth.IOAuth
 }
 
 func NewService(cfg *config.Auth, logger *zerolog.Logger) (IService, error) {
@@ -35,13 +36,13 @@ func NewService(cfg *config.Auth, logger *zerolog.Logger) (IService, error) {
 		logger.Fatal().Err(err).Msg("error initializing vault client")
 	}
 
-	grpcAst, err := grpc.NewGrpcAstClient(&cfg.GrpcAST)
+	grpcAst, err := ast.NewAst(&cfg.GrpcAST)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("error initializing AST GRPC client")
 	}
 
-	grpcOAuth, err := grpc.NewGrpcOAuthClient(&cfg.GrpcOAuth)
+	grpcOAuth, err := oauth.NewGrpcOAuthClient(&cfg.GrpcOAuth)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("error initializing OAuth GRPC client")
@@ -49,15 +50,18 @@ func NewService(cfg *config.Auth, logger *zerolog.Logger) (IService, error) {
 
 	c := cache.NewCache()
 
-	return &Service{
+	svc := &Service{
 		Zerolog:   logger,
 		Cfg:       cfg,
 		Cache:     c,
 		Vault:     v,
-		Server:    external_server.NewServer(&cfg.ExternalServer, logger, c),
 		GrpcAst:   grpcAst,
 		GrpcOAuth: grpcOAuth,
-	}, nil
+	}
+
+	svc.Server = external_server.NewServer(logger, svc)
+
+	return svc, nil
 }
 
 func (s *Service) Start() error {
@@ -66,3 +70,14 @@ func (s *Service) Start() error {
 func (s *Service) Stop() error {
 	return s.Server.Stop()
 }
+func (s *Service) VaultGetter() vault.IVault {
+	return s.Vault
+}
+func (s *Service) GrpcAstGetter() ast.IAst {
+	return s.GrpcAst
+}
+func (s *Service) GrpcOAuthGetter() oauth.IOAuth {
+	return s.GrpcOAuth
+}
+func (s *Service) CacheGetter() cache.ICache { return s.Cache }
+func (s *Service) CfgGetter() *config.Auth   { return s.Cfg }
