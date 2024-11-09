@@ -15,7 +15,7 @@ type IAst interface {
 }
 
 type Ast struct {
-	Conn        grpc.ClientConnInterface
+	Conn        ast.AstClient
 	MaxPollTime time.Duration
 }
 
@@ -30,15 +30,15 @@ func NewAst(cf *config.GrpcAST) (*Ast, error) {
 	}
 
 	return &Ast{
-		Conn:        c,
+		Conn:        ast.NewAstClient(c),
 		MaxPollTime: cf.MaxPollTime,
 	}, nil
 }
 
 func (a *Ast) GetIAID(ctx context.Context, login, cc string) (bool, string, string, error) {
-	c, r := ast.NewAstClient(a.Conn), ast.GetIAIDRequest{Login: login, ConfirmCode: cc}
+	r := ast.GetIAIDRequest{Login: login, ConfirmCode: cc}
 
-	res, err := c.GetIAID(ctx, &r)
+	res, err := a.Conn.GetIAID(ctx, &r)
 	if err != nil {
 		return false, "", "", err
 	}

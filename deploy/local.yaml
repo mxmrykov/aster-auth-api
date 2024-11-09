@@ -13,7 +13,11 @@ grpcOAuth:
   port: 4004
   maxPollTime: "10s"
 vault:
+  host: "localhost"
+  port: 8801
+  clientTimeout: "10s"
   tokenRepo:
+    path: "/v1/secret/data/auth-api/tokens"
     appJwtSecretName: "appJwtSecret"
     astJwtSecretName: "astJwtSecret"
     oAuthJwtSecretName: "oAuthJwtSecret"

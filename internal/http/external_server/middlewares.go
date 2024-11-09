@@ -91,7 +91,7 @@ func (s *Server) setFootprintCookie(ctx *gin.Context) {
 		Name:     "X-Client-Footprint",
 		Value:    strings.ToUpper(sign),
 		Path:     "/",
-		MaxAge:   900,
+		MaxAge:   s.svc.CfgGetter().ExternalServer.RateLimitCookieLifetime,
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,

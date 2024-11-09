@@ -22,9 +22,10 @@ type (
 	}
 
 	ExternalServer struct {
-		Port                 int           `yaml:"port"`
-		RateLimiterTimeframe time.Duration `yaml:"rateLimiterTimeframe"`
-		RateLimiterCap       uint8         `yaml:"rateLimiterCap"`
+		Port                    int           `yaml:"port"`
+		RateLimiterTimeframe    time.Duration `yaml:"rateLimiterTimeframe"`
+		RateLimiterCap          uint8         `yaml:"rateLimiterCap"`
+		RateLimitCookieLifetime int           `yaml:"rateLimitCookieLifetime"`
 	}
 
 	GrpcAST struct {
@@ -40,14 +41,17 @@ type (
 	}
 
 	Vault struct {
-		AuthToken string
+		AuthToken     string        `env:"VAULT_AUTH_TOKEN"`
+		Host          string        `yaml:"host"`
+		Port          int           `yaml:"port"`
+		ClientTimeout time.Duration `yaml:"clientTimeout"`
 
 		TokenRepo struct {
 			Path string `yaml:"path"`
 
-			AppJwtSecretName   string `yaml:"appJwtSecret"`
-			AstJwtSecretName   string `yaml:"astJwtSecret"`
-			OAuthJwtSecretName string `yaml:"oAuthJwtSecret"`
+			AppJwtSecretName   string `yaml:"appJwtSecretName"`
+			AstJwtSecretName   string `yaml:"astJwtSecretName"`
+			OAuthJwtSecretName string `yaml:"oAuthJwtSecretName"`
 		} `yaml:"tokenRepo"`
 	}
 )
@@ -66,6 +70,8 @@ func InitConfig() (*Auth, *zerolog.Logger, error) {
 	}
 
 	l := logger.NewLogger(cfg.UseStackTrace)
+
+	l.Info().Msgf("%v", cfg)
 
 	return &cfg, l, nil
 }

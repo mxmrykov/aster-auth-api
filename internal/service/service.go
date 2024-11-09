@@ -3,8 +3,8 @@ package service
 import (
 	"github.com/mxmrykov/asterix-auth/internal/cache"
 	"github.com/mxmrykov/asterix-auth/internal/config"
-	"github.com/mxmrykov/asterix-auth/internal/grpc/ast"
-	"github.com/mxmrykov/asterix-auth/internal/grpc/oauth"
+	"github.com/mxmrykov/asterix-auth/internal/grpc-client/ast"
+	"github.com/mxmrykov/asterix-auth/internal/grpc-client/oauth"
 	"github.com/mxmrykov/asterix-auth/internal/http/external_server"
 	"github.com/mxmrykov/asterix-auth/pkg/clients/vault"
 	"github.com/rs/zerolog"
@@ -81,3 +81,4 @@ func (s *Service) GrpcOAuthGetter() oauth.IOAuth {
 }
 func (s *Service) CacheGetter() cache.ICache { return s.Cache }
 func (s *Service) CfgGetter() *config.Auth   { return s.Cfg }
+func (s *Service) Log() *zerolog.Logger      { return s.Zerolog }

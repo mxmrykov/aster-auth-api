@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/mxmrykov/asterix-auth/internal/cache"
 	"github.com/mxmrykov/asterix-auth/internal/config"
-	"github.com/mxmrykov/asterix-auth/internal/grpc/ast"
-	"github.com/mxmrykov/asterix-auth/internal/grpc/oauth"
+	"github.com/mxmrykov/asterix-auth/internal/grpc-client/ast"
+	"github.com/mxmrykov/asterix-auth/internal/grpc-client/oauth"
 	"github.com/mxmrykov/asterix-auth/pkg/clients/vault"
 
 	"net/http"
@@ -27,6 +27,7 @@ type IServer interface {
 
 	CacheGetter() cache.ICache
 	CfgGetter() *config.Auth
+	Log() *zerolog.Logger
 }
 
 type Server struct {
