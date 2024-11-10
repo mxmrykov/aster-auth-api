@@ -15,13 +15,25 @@ func GracefulShutDown() chan os.Signal {
 	return c
 }
 
-func AssignSidToken(iaid, asid, signature string) (string, error) {
+func AssignAsidToken(iaid, asid, signature string) (string, error) {
 	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, model.SidToken{
 		Iaid:          iaid,
 		Asid:          asid,
 		SignatureDate: time.Now().Format(time.RFC3339),
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * 3).Unix(),
+			ExpiresAt: time.Now().Add(time.Minute * 5).Unix(),
+			Issuer:    "aster-auth",
+		},
+	})
+	return unsignedToken.SignedString(signature)
+}
+
+func AssignXAuthToken(asid, signature string) (string, error) {
+	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, model.XAuthToken{
+		Asid:          asid,
+		SignatureDate: time.Now().Format(time.RFC3339),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Minute * 5).Unix(),
 			Issuer:    "aster-auth",
 		},
 	})

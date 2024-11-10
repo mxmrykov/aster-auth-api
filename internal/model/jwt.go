@@ -8,3 +8,9 @@ type SidToken struct {
 	SignatureDate string `json:"signatureDate"`
 	jwt.StandardClaims
 }
+
+type XAuthToken struct {
+	Asid          string `json:"ASID"`
+	SignatureDate string `json:"signatureDate"`
+	jwt.StandardClaims
+}

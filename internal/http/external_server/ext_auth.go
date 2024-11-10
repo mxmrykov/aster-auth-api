@@ -51,7 +51,7 @@ func (s *Server) authorizeExternal(ctx *gin.Context) {
 		return
 	}
 
-	assignedToken, err := utils.AssignSidToken(iaid, asid, appSecret)
+	assignedToken, err := utils.AssignAsidToken(iaid, asid, appSecret)
 
 	responize.R(
 		ctx,
