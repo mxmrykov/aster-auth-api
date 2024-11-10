@@ -1,0 +1,19 @@
+// protoc --go_out=./internal/proto/gen --go-grpc_out=./internal/proto/gen internal/proto/ast.proto
+syntax = "proto3";
+
+option go_package = "./";
+
+service Ast {
+  rpc GetIAID(GetIAIDRequest) returns (GetIAIDResponse);
+}
+
+message GetIAIDRequest {
+  string login = 1;
+  string confirmCode = 2;
+}
+
+message GetIAIDResponse {
+  bool has = 1;
+  string IAID = 2;
+  string ASID = 3;
+}
