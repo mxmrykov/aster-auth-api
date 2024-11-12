@@ -39,8 +39,13 @@ func (a *Ast) GetIAID(ctx context.Context, login, cc string) (bool, string, stri
 	r := ast.GetIAIDRequest{Login: login, ConfirmCode: cc}
 
 	res, err := a.Conn.GetIAID(ctx, &r)
+
 	if err != nil {
 		return false, "", "", err
+	}
+
+	if res.Message == "no such login" {
+		return false, "", res.ASID, nil
 	}
 
 	return res.Has, res.IAID, res.ASID, nil

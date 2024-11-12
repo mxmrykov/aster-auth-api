@@ -67,6 +67,7 @@ func (s *Server) configureRouter() {
 
 	externalAuthGroup := s.router.Group("/auth/api/v1/external")
 	externalAuthGroup.POST("/new/sid", s.authorizeExternal)
+	externalAuthGroup.POST("/check/login", s.checkLogin)
 }
 
 func recoveryFunc(logger *zerolog.Logger) gin.RecoveryFunc {

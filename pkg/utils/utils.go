@@ -25,7 +25,7 @@ func AssignAsidToken(iaid, asid, signature string) (string, error) {
 			Issuer:    "aster-auth",
 		},
 	})
-	return unsignedToken.SignedString(signature)
+	return unsignedToken.SignedString([]byte(signature))
 }
 
 func AssignXAuthToken(asid, signature string) (string, error) {

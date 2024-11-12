@@ -10,3 +10,8 @@ type Response struct {
 type ExtAuthResponse struct {
 	SidToken string `json:"sid_token"`
 }
+
+type CheckLoginResponse struct {
+	Unused         bool   `json:"unused"`
+	XTempauthToken string `json:"x_TempAuth_Token"`
+}

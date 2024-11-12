@@ -8,17 +8,14 @@ import (
 )
 
 func main() {
-	log.Info().Timestamp().Msg("starting auth api...")
-
-	log.Info().Timestamp().Msg("initializing config...")
-
 	cfg, logger, err := config.InitConfig()
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize config")
 	}
 
-	log.Info().Timestamp().Msg("initializing service...")
+	logger.Info().Timestamp().Msg("config initialized")
+	logger.Info().Timestamp().Msg("initializing service...")
 
 	s, err := service.NewService(cfg, logger)
 
@@ -26,21 +23,21 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to initialize service")
 	}
 
-	log.Info().Timestamp().Msg("starting service...")
+	logger.Info().Timestamp().Msg("starting service...")
 
 	go func() {
 		if err = s.Start(); err != nil {
-			log.Fatal().Err(err).Msg("failed to start service")
+			logger.Fatal().Err(err).Msg("failed to start service")
 		}
 	}()
 
 	<-utils.GracefulShutDown()
 
-	log.Info().Timestamp().Msg("graceful shutdown")
+	logger.Info().Timestamp().Msg("graceful shutdown")
 
 	if err = s.Stop(); err != nil {
-		log.Fatal().Err(err).Msg("failed to stop service")
+		logger.Fatal().Err(err).Msg("failed to stop service")
 	}
 
-	log.Info().Timestamp().Msg("service stopped")
+	logger.Info().Timestamp().Msg("service stopped")
 }
