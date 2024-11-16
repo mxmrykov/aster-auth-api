@@ -2,11 +2,12 @@ package cache
 
 import (
 	"encoding/base64"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 )
 
 type ICache interface {
@@ -23,6 +24,8 @@ type ICache interface {
 }
 
 type Props struct {
+	ASID string `json:"ASID"`
+
 	// rate limiting
 	RateLimitRemain uint8     `json:"rateLimitRemain"`
 	LastReq         time.Time `json:"lastReq"`

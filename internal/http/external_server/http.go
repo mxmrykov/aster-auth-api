@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/gin-contrib/cors"
 	"github.com/mxmrykov/asterix-auth/internal/cache"
 	"github.com/mxmrykov/asterix-auth/internal/config"
 	"github.com/mxmrykov/asterix-auth/internal/grpc-client/ast"
@@ -60,6 +62,7 @@ func NewServer(logger *zerolog.Logger, svc IServer) *Server {
 
 func (s *Server) configureRouter() {
 	s.router.Use(s.footPrintAuth)
+	s.router.Use(cors.Default())
 
 	internalAuthGroup := s.router.Group("/auth/api/v1/internal")
 	internalAuthGroup.Use(s.internalAuthMiddleWare)
