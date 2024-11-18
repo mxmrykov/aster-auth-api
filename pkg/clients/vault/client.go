@@ -23,9 +23,8 @@ func NewVault(cfg *config.Vault) (IVault, error) {
 	client, err := vault.New(
 		vault.WithAddress(
 			fmt.Sprintf(
-				"https://%s:%d",
+				"https://%s",
 				cfg.Host,
-				cfg.Port,
 			),
 		),
 		vault.WithRequestTimeout(cfg.ClientTimeout),
