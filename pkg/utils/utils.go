@@ -29,6 +29,22 @@ func AssignAsidToken(iaid, asid, signature string) (string, error) {
 	return unsignedToken.SignedString([]byte(signature))
 }
 
+func ValidateAsidToken(token, signature string) (model.SidToken, error) {
+	parsedToken, err := jwt.ParseWithClaims(
+		token,
+		&model.SidToken{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(signature), nil
+		},
+	)
+
+	if claims, ok := parsedToken.Claims.(*model.SidToken); ok && parsedToken.Valid {
+		return *claims, nil
+	}
+
+	return model.SidToken{}, err
+}
+
 func AssignXAuthToken(asid, signature string) (string, error) {
 	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, model.XAuthToken{
 		Asid:          asid,

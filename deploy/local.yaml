@@ -10,7 +10,7 @@ grpcAST:
   maxPollTime: "10s"
 grpcOAuth:
   host: "localhost"
-  port: 4004
+  port: 4001
   maxPollTime: "10s"
 vault:
   host: "83.220.175.189"

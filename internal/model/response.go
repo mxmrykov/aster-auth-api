@@ -15,3 +15,9 @@ type CheckLoginResponse struct {
 	Unused         bool   `json:"unused"`
 	XTempauthToken string `json:"x_TempAuth_Token"`
 }
+
+type ClientResponse struct {
+	ClientID     string `json:"clientID"`
+	ClientSecret string `json:"clientSecret"`
+	OAuthCode    string `json:"OAuthCode"`
+}

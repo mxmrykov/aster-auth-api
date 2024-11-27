@@ -11,10 +11,44 @@ import (
 	"github.com/google/uuid"
 	"github.com/mxmrykov/asterix-auth/internal/cache"
 	"github.com/mxmrykov/asterix-auth/pkg/responize"
+	"github.com/mxmrykov/asterix-auth/pkg/utils"
 )
 
 func (s *Server) internalAuthMiddleWare(ctx *gin.Context) {
+	authToken := ctx.GetHeader("X-Auth-Token")
 
+	if authToken == "" {
+		s.svc.Log().Error().Msg("Empty auth token")
+		responize.R(ctx, nil, http.StatusBadRequest, "Empty auth token", true)
+		ctx.Abort()
+		return
+	}
+
+	jwtSecret, err := s.svc.VaultGetter().GetSecret(
+		ctx,
+		s.svc.CfgGetter().Vault.TokenRepo.Path,
+		s.svc.CfgGetter().Vault.TokenRepo.AppJwtSecretName,
+	)
+
+	if err != nil {
+		s.svc.Log().Error().Err(err).Msg("vault error")
+		responize.R(ctx, nil, http.StatusInternalServerError, "Internal authorization error", true)
+		ctx.Abort()
+		return
+	}
+
+	authPayload, err := utils.ValidateAsidToken(authToken, jwtSecret)
+
+	if err != nil {
+		s.svc.Log().Error().Err(err).Msg("token error")
+		responize.R(ctx, nil, http.StatusBadRequest, "Invalid token", true)
+		ctx.Abort()
+		return
+	}
+
+	ctx.Set("iaid", authPayload.Iaid)
+	ctx.Set("asid", authPayload.Asid)
+	ctx.Next()
 }
 
 func (s *Server) footPrintAuth(ctx *gin.Context) {
