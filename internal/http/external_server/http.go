@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/gin-contrib/cors"
 	"github.com/mxmrykov/asterix-auth/internal/cache"
 	"github.com/mxmrykov/asterix-auth/internal/config"
 	"github.com/mxmrykov/asterix-auth/internal/grpc-client/ast"
 	"github.com/mxmrykov/asterix-auth/internal/grpc-client/oauth"
+	"github.com/mxmrykov/asterix-auth/internal/model"
 	"github.com/mxmrykov/asterix-auth/pkg/clients/vault"
 
 	"net/http"
@@ -28,6 +31,8 @@ type IServer interface {
 	CacheGetter() cache.ICache
 	CfgGetter() *config.Auth
 	Log() *zerolog.Logger
+
+	InternalAuthorize(ctx *gin.Context, login, pass string) (*model.ClientResponse, error)
 }
 
 type Server struct {
@@ -60,13 +65,21 @@ func NewServer(logger *zerolog.Logger, svc IServer) *Server {
 
 func (s *Server) configureRouter() {
 	s.router.Use(s.footPrintAuth)
+	s.router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "https://aster.ru"},
+		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-type", "X-TempAuth-Token", "X-Auth-Token"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	internalAuthGroup := s.router.Group("/auth/api/v1/internal")
 	internalAuthGroup.Use(s.internalAuthMiddleWare)
-	internalAuthGroup.POST("/new/oauth")
+	internalAuthGroup.POST("/new/oauth", s.authorizeInternal)
 
 	externalAuthGroup := s.router.Group("/auth/api/v1/external")
 	externalAuthGroup.POST("/new/sid", s.authorizeExternal)
+	externalAuthGroup.POST("/check/login", s.checkLogin)
 }
 
 func recoveryFunc(logger *zerolog.Logger) gin.RecoveryFunc {

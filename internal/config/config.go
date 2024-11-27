@@ -71,7 +71,5 @@ func InitConfig() (*Auth, *zerolog.Logger, error) {
 
 	l := logger.NewLogger(cfg.UseStackTrace)
 
-	l.Info().Msgf("%v", cfg)
-
 	return &cfg, l, nil
 }

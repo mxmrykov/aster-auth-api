@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"github.com/golang-jwt/jwt"
-	"github.com/mxmrykov/asterix-auth/internal/model"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/mxmrykov/asterix-auth/internal/model"
 )
 
 func GracefulShutDown() chan os.Signal {
@@ -25,7 +26,23 @@ func AssignAsidToken(iaid, asid, signature string) (string, error) {
 			Issuer:    "aster-auth",
 		},
 	})
-	return unsignedToken.SignedString(signature)
+	return unsignedToken.SignedString([]byte(signature))
+}
+
+func ValidateAsidToken(token, signature string) (model.SidToken, error) {
+	parsedToken, err := jwt.ParseWithClaims(
+		token,
+		&model.SidToken{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(signature), nil
+		},
+	)
+
+	if claims, ok := parsedToken.Claims.(*model.SidToken); ok && parsedToken.Valid {
+		return *claims, nil
+	}
+
+	return model.SidToken{}, err
 }
 
 func AssignXAuthToken(asid, signature string) (string, error) {
@@ -38,4 +55,20 @@ func AssignXAuthToken(asid, signature string) (string, error) {
 		},
 	})
 	return unsignedToken.SignedString(signature)
+}
+
+func ValidateXTempAuthToken(XAuthToken, signature string) (model.XAuthToken, error) {
+	parsedToken, err := jwt.ParseWithClaims(
+		XAuthToken,
+		&model.XAuthToken{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(signature), nil
+		},
+	)
+
+	if claims, ok := parsedToken.Claims.(*model.XAuthToken); ok && parsedToken.Valid {
+		return *claims, nil
+	}
+
+	return model.XAuthToken{}, err
 }
